@@ -18,9 +18,14 @@ old_zip_file = st.file_uploader("Upload the old.csv as a zip file", type=["zip"]
 
 
 def process_files(updated_df, old_df):
-    """Filters the old DataFrame based on SKUs from the updated DataFrame."""
-    if 'SKU' not in updated_df.columns or 'SKU' not in old_df.columns:
-        st.error("Both CSV files must contain a 'SKU' column.")
+    """Filters the old DataFrame based on SKUs from the updated DataFrame (case-insensitive)."""
+    # Normalize column names to lowercase for consistency
+    updated_df.columns = updated_df.columns.str.lower()
+    old_df.columns = old_df.columns.str.lower()
+
+    # Ensure both files have an SKU column (lowercase check after normalization)
+    if 'sku' not in updated_df.columns or 'sku' not in old_df.columns:
+        st.error("Both CSV files must contain a 'SKU' or 'sku' column.")
         return None
 
     updated_skus = updated_df['sku'].unique()
@@ -43,8 +48,6 @@ if updated_file and old_zip_file:
                 # Assuming the first CSV file is the one we want
                 old_csv_filename = csv_files_in_zip[0]
                 with z.open(old_csv_filename) as f:
-                    # To avoid issues with different line endings, read the file into a buffer
-                    # and then let pandas read from the buffer.
                     csv_buffer = io.StringIO(f.read().decode('utf-8'))
                     old_df = pd.read_csv(csv_buffer)
 
@@ -63,7 +66,6 @@ if updated_file and old_zip_file:
                     # --- Download Button ---
                     @st.cache_data
                     def convert_df_to_csv(df):
-                        # IMPORTANT: Cache the conversion to prevent computation on every rerun
                         return df.to_csv(index=False).encode('utf-8')
 
                     csv_to_download = convert_df_to_csv(filtered_df)
