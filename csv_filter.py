@@ -23,8 +23,8 @@ def process_files(updated_df, old_df):
         st.error("Both CSV files must contain a 'SKU' column.")
         return None
 
-    updated_skus = updated_df['SKU'].unique()
-    filtered_df = old_df[old_df['SKU'].isin(updated_skus)]
+    updated_skus = updated_df['sku'].unique()
+    filtered_df = old_df[old_df['sku'].isin(updated_skus)]
     return filtered_df
 
 
